@@ -1,5 +1,55 @@
 import pygame
 import os
+import sys
+
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
+
+
+pygame.init()
+width, height = 800, 600
+window = pygame.display.set_mode((width, height ))
+pygame.display.set_caption("Escape Room")
+
+# this function will show the images of the rooms
+def show_room(room):
+    try:
+        path_ = f"{room['name']}.jpg" or f"{room['name']}.jpeg"
+        if not os.path.isfile(path_):
+            print(f"Image not found: {path_}")
+            return
+        
+        image = pygame.image.load(path_)
+        image = pygame.transform.scale(image, (width, height ))
+        window.blit(image, (0, 0))
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        pygame.time.delay(1000)
+    except Exception as e:
+        print(f"Error showing image of '{room}': {e}")
+
+# this funcition will show the items
+def show_object(item_name):
+    try:
+        path2 = f"{item_name}.jpg" or f"{item_name}.jpeg"
+        if not os.path.isfile(path2):
+            print(f"Image not found: {path2}")
+
+        image = pygame.image.load(path2)
+        image = pygame.transform.scale(image, (width, height ))
+        window.blit(image, (0, 0))
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+        pygame.time.delay(2000)
+    except Exception as e:
+        print(f"Error showing image of the object '{item_name}': {e}")
+        
+
 
 # Define rooms and game state first
 office = {
@@ -30,20 +80,18 @@ def play_room(room):
 pygame.mixer.init()
 
 # Set working directory (if needed)
-os.chdir("/Users/candela/Desktop/DATA ESCAPE/")
+# os.chdir("/Users/candela/Desktop/DATA ESCAPE/")
 
 # Load and play background music
 pygame.mixer.music.load("background.mp3")
 pygame.mixer.music.play(-1)  # Loop indefinitely
 
-# Now, start the game properly AFTER everything is defined
-game_state = INIT_GAME_STATE.copy()
-start_game()  # This now works without errors!
+
 
 
 # define rooms and items
 
-window = {
+object_window = {
     "name": "window",
     "type": "object",
 }
@@ -156,7 +204,7 @@ object_relations = {}
 
 # To update the dictionary with room-object relationships
 object_relations.update({
-    "office": [window,laptop_bag, door_a],
+    "office": [object_window,laptop_bag, door_a],
     "laptop bag": [key_a],
     "operations room": [computer_desk, door_a, door_b, door_c],
     "computer desk": [key_b],
@@ -206,8 +254,10 @@ def play_room(room):
     explore (list all items in this room) or examine an item found here.
     """
     game_state["current_room"] = room
+
+    show_room(room) # this shows the image of the room
     if(game_state["current_room"] == game_state["target_room"]):
-        print("Congrats! You escaped the room!")
+        print("Congrats! You escaped from the impossible Data Center!")
     else:
         print("You are now in the " + room["name"])
         intended_action = input("What would you like to do? Type 'explore' or 'examine'?").strip()
@@ -255,6 +305,7 @@ def examine_item(item_name):
 
     for item in object_relations[current_room["name"]]:
         if(item["name"] == item_name):
+            show_object(item_name) #this shows the object
             output = "You examine " + item_name + ". "
             if(item["type"] == "door"):
                 have_key = False
@@ -285,6 +336,8 @@ def examine_item(item_name):
     else:
         play_room(current_room)
 
+
+# Now, start the game properly AFTER everything is defined
 game_state = INIT_GAME_STATE.copy()
 
 start_game()
